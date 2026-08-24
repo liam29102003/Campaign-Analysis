@@ -1,0 +1,104 @@
+SYNTHETIC DIGITAL-WALLET WAREHOUSE - GENERATION SUMMARY
+============================================================
+Generated at: 2026-08-22 11:53:53.504038
+Random seed: 42
+Date coverage: 2024-01-01 -> 2026-03-31
+Reporting year (main analytical population): 2025
+Generation time: 40.7 seconds
+
+ROW COUNTS
+------------------------------------------------------------
+  dim_date                                 821 rows
+  dim_customer                          30,000 rows
+  dim_merchant                           1,000 rows
+  dim_campaign                              70 rows
+  dim_promotion                            171 rows
+  fct_campaign_participation           179,057 rows
+  fct_transaction                      835,143 rows
+  fct_promotion_redemption              61,258 rows
+  fct_customer_daily_activity        1,217,407 rows
+
+CAMPAIGN SCOPE
+------------------------------------------------------------
+  In-scope campaigns (fully within 2025): 64
+  Out-of-scope campaigns (for testing filter logic): 6
+  Team split: {'Marketing': 40, 'A&G': 30}
+  Type split: {'Acquisition': 16, 'Engagement': 13, 'Transaction Growth': 12, 'Seasonal': 11, 'Merchant Promotion': 7, 'Referral': 7, 'Reactivation': 4}
+
+NOTES ON DESIGN
+------------------------------------------------------------
+- Campaign participation, transaction volume/value, and post-campaign
+  retention are generated causally: eligibility rules depend on
+  campaign type and customer traits; participation depends on a
+  per-campaign participation rate combined with each customer's
+  (hidden, persistent) propensity; transaction volume is boosted
+  during and after campaigns a customer participated in, with the
+  size and persistence of that boost varying by campaign, producing
+  a natural spread of over-performing, under-performing, high-cost/
+  low-return, and high-quality/low-reach campaigns.
+- Customers carry persistent hidden behavioral traits (base
+  transaction rate, typical transaction size, campaign
+  responsiveness, preferred merchant category) so behavior is
+  consistent over time rather than re-randomized per transaction.
+- fct_customer_daily_activity is generated over a bounded
+  observation window per customer (anchored on their first campaign
+  participation date, or a random point in their active lifetime)
+  rather than every date for every customer, to keep the grain
+  analytically useful (retention windows) without needless volume.
+- Campaign targets (target_customer_count/transaction_count/amount)
+  are set independently of realized performance, so actual results
+  naturally beat, meet, or miss targets.
+
+
+======================================================================
+DATA VALIDATION REPORT
+======================================================================
+
+TABLE                                 ROWS     PK DUPLICATES
+------------------------------------------------------------
+dim_date                               821                 0
+dim_customer                        30,000                 0
+dim_merchant                         1,000                 0
+dim_campaign                            70                 0
+dim_promotion                          171                 0
+fct_campaign_participation         179,057                 0
+fct_transaction                    835,143                 0
+fct_promotion_redemption            61,258                 0
+fct_customer_daily_activity      1,217,407                 0
+
+------------------------------------------------------------
+FOREIGN KEY / REFERENTIAL INTEGRITY CHECKS
+------------------------------------------------------------
+  dim_promotion.campaign_id -> dim_campaign                     0 violations
+  fct_campaign_participation.campaign_id -> dim_campaign        0 violations
+  fct_campaign_participation.customer_id -> dim_customer        0 violations
+  fct_transaction.customer_id -> dim_customer                   0 violations
+  fct_transaction.merchant_id -> dim_merchant                   0 violations
+  fct_promotion_redemption.campaign_id -> dim_campaign          0 violations
+  fct_promotion_redemption.promotion_id -> dim_promotion        0 violations
+  fct_promotion_redemption.customer_id -> dim_customer          0 violations
+  fct_promotion_redemption.transaction_id -> fct_transaction       0 violations
+  fct_customer_daily_activity.customer_id -> dim_customer       0 violations
+
+------------------------------------------------------------
+DATE LOGIC CHECKS
+------------------------------------------------------------
+  Invalid campaign dates (end < start): 0
+  Invalid promotion dates (outside campaign window): 0
+  Invalid participation dates (outside campaign window): 0
+  Invalid redemption dates (outside promotion window): 0
+  In-scope campaigns (fully within 2025): 64
+  Out-of-scope campaigns: 6
+
+------------------------------------------------------------
+FINANCIAL LOGIC CHECKS
+------------------------------------------------------------
+  Transactions where cashback > amount: 0
+  Negative reward_amount rows: 0
+  Negative discount_amount rows: 0
+  Negative campaign budgets: 0
+  Transaction success rate: 93.5% (OK, majority successful)
+
+======================================================================
+OVERALL VALIDATION STATUS: PASS
+======================================================================
